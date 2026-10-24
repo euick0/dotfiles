@@ -1,0 +1,18 @@
+eval "$(zoxide init zsh)"
+eval "$(starship init zsh)"
+# Start tmux automatically (skip if already inside tmux); detaching returns to this shell.
+# Reattach to the most recently used session (ignoring the prefix+t "popup" scratch
+# session); if no server is running, start one so continuum can restore the saved sessions
+if [[ -o interactive ]] && [[ -z "$TMUX" ]] && command -v tmux >/dev/null 2>&1; then
+  last=$(tmux list-sessions -F '#{session_last_attached} #{session_name}' 2>/dev/null |
+    grep -v ' popup$' | sort -rn | head -1 | cut -d' ' -f2-)
+  if [[ -n $last ]]; then
+    tmux attach -t "=$last"
+  else
+    tmux
+  fi
+  unset last
+# Show system info on terminal startup (inside tmux, or when tmux isn't available)
+elif [[ -o interactive ]] && command -v fastfetch >/dev/null 2>&1; then
+  fastfetch
+fi
