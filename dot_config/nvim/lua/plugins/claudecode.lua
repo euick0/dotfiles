@@ -19,13 +19,6 @@ local function update_layout()
   end
 end
 
-local function claude(cmd)
-  return function()
-    update_layout()
-    vim.cmd(cmd)
-  end
-end
-
 return {
   "coder/claudecode.nvim",
   opts = function(_, opts)
@@ -33,10 +26,17 @@ return {
     opts.terminal = opts.terminal or {}
     opts.terminal.snacks_win_opts = win_opts
   end,
-  keys = {
-    { "<leader>ac", claude("ClaudeCode"), desc = "Toggle Claude" },
-    { "<leader>af", claude("ClaudeCodeFocus"), desc = "Focus Claude" },
-    { "<leader>ar", claude("ClaudeCode --resume"), desc = "Resume Claude" },
-    { "<leader>aC", claude("ClaudeCode --continue"), desc = "Continue Claude" },
-  },
+  config = function(_, opts)
+    require("claudecode").setup(opts)
+    -- Re-check orientation every time the terminal is opened, whichever
+    -- command or keymap opened it.
+    local terminal = require("claudecode.terminal")
+    for _, name in ipairs({ "open", "simple_toggle", "focus_toggle", "toggle_open_no_focus", "ensure_visible", "toggle" }) do
+      local fn = terminal[name]
+      terminal[name] = function(...)
+        update_layout()
+        return fn(...)
+      end
+    end
+  end,
 }
