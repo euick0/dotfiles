@@ -7,3 +7,5 @@ vim.g.snacks_animate = false
 -- in code, treesitter limits it to comments and strings
 vim.opt.spell = true
 vim.opt.spelllang = { "en", "pt" }
+-- basedpyright instead of pyright, since pyright has no inlay hints (toggle with <leader>uh)
+vim.g.lazyvim_python_lsp = "basedpyright"
