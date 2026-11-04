@@ -11,6 +11,8 @@ return {
 		opts = {
 			-- match tmux (catppuccin macchiato) and ghostty (Catppuccin Macchiato)
 			flavour = "macchiato",
+			-- paint no background, so nvim and Claude Code show the terminal's own color
+			transparent_background = true,
 			custom_highlights = function(colors)
 				-- VS Code-style spell checking: keep the text color, only add a wavy underline
 				return {
@@ -18,6 +20,8 @@ return {
 					SpellCap = spell(colors.overlay0),
 					SpellRare = spell(colors.overlay0),
 					SpellLocal = spell(colors.overlay0),
+					-- keep snacks terminals (Claude Code) on the terminal background when unfocused
+					SnacksNormalNC = { link = "Normal" },
 				}
 			end,
 		},
