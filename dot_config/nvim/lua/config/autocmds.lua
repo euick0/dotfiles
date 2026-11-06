@@ -8,6 +8,9 @@
 -- e.g. vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
 vim.api.nvim_create_autocmd({ "InsertLeave", "TextChanged" }, {
   group = vim.api.nvim_create_augroup("autosave", { clear = true }),
+  -- nested, otherwise the :update below doesn't fire BufWritePost and LSP
+  -- servers never get textDocument/didSave (stale diagnostics)
+  nested = true,
   callback = function(args)
     local buf = args.buf
     -- only real, named, modifiable files that have changes

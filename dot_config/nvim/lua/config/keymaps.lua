@@ -53,10 +53,44 @@ local function run_python()
     vim.defer_fn(send, 100)
   end
 end
+
+-- Set while we believe swipl is running in the shared terminal
+local swipl_job
+
+local function run_prolog()
+  if vim.bo.filetype ~= "prolog" then
+    vim.notify("Not a Prolog file", vim.log.levels.WARN)
+    return
+  end
+  vim.cmd("write")
+  local file = vim.fn.shellescape(vim.api.nvim_buf_get_name(0))
+
+  local t, created = get_term()
+  if not t:valid() then
+    t:show()
+  end
+
+  local job = vim.b[t.buf].terminal_job_id
+  local send = function()
+    vim.fn.chansend(job, "clear; swipl " .. file .. "\n")
+    swipl_job = job
+  end
+  if created then
+    vim.defer_fn(send, 200)
+  elseif swipl_job == job then
+    -- Leave the old swipl session first (a stray "halt." at a shell prompt is harmless)
+    vim.fn.chansend(job, "halt.\n")
+    vim.defer_fn(send, 300)
+  else
+    vim.fn.chansend(job, "\x03")
+    vim.defer_fn(send, 100)
+  end
+end
 vim.keymap.set("n", "<leader>ft", toggle_term, { desc = "Terminal (Root Dir)" })
 vim.keymap.set({ "n", "t" }, "<C-/>", toggle_term, { desc = "Toggle Terminal" })
 vim.keymap.set({ "n", "t" }, "<C-_>", toggle_term, { desc = "which_key_ignore" })
 vim.keymap.set("n", "<leader>rp", run_python, { desc = "Run Python file in terminal" })
+vim.keymap.set("n", "<leader>rP", run_prolog, { desc = "Run Prolog file in swipl" })
 
 -- Resize splits with Ctrl+Up/Down, also from inside the terminal split
 map({ "n", "t" }, "<C-Up>", "<cmd>resize +2<cr>", { desc = "Increase Window Height" })
