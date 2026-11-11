@@ -41,7 +41,12 @@ local function run_python()
 
   local job = vim.b[t.buf].terminal_job_id
   local send = function()
-    vim.fn.chansend(job, "clear; python3 " .. file .. "\n")
+    -- Prefer Homebrew's Python: macOS's /usr/bin/python3 is 3.9, which has
+    -- plain tracebacks without colors or ~~~^^^ markers under the failing code
+    local python = vim.fn.executable("/opt/homebrew/bin/python3") == 1 and "/opt/homebrew/bin/python3" or "python3"
+    -- pyrun.py runs the file and, on a crash, also lists the variables at the error
+    local pyrun = vim.fn.shellescape(vim.fn.stdpath("config") .. "/scripts/pyrun.py")
+    vim.fn.chansend(job, "clear; " .. python .. " " .. pyrun .. " " .. file .. "\n")
   end
   -- A brand-new shell needs a moment to start before it can receive input
   if created then
